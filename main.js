@@ -7,6 +7,7 @@ let dbExists = false;
 if (fs.existsSync("database.sqlite")) dbExists = true;
 var db = new sqlite3.Database('database.sqlite');
 let token;
+// Database creation/token loading
 if (!dbExists) {
     db.run("CREATE TABLE temps (time INT, sensor VARCHAR(10), humidity INT, temperature INT)")
     db.run("CREATE TABLE system (option TEXT, value TEXT)", () => {
@@ -22,10 +23,7 @@ if (!dbExists) {
 }
 const app = express()
 app.use(bodyParser.json())
-
-app.get('/', function (req, res) {
-    res.json({message: "Temperature server main page"})
-})
+app.use(express.static('web'));
 
 app.post('/input/:sensor', function (req, res) {
     if (!req.body.hasOwnProperty('token') || req.body['token'] !== token) {
@@ -53,6 +51,19 @@ app.get('/today/:sensor', function (req, res) {
     start.setHours(0,0,0,0);
     db.all("SELECT temperature, humidity, time FROM temps WHERE sensor=? AND time >= ? ORDER BY time ASC", sensor, start.getTime(),(err, rows) => {
         res.json({message: "Loaded " + sensor + " data from today!", data: rows})
+    })
+})
+
+app.get('/lastDay/:sensor', function (req, res) {
+    let sensor = req.params.sensor;
+    db.all("SELECT temperature, humidity, time FROM temps WHERE sensor=? AND time >= ? ORDER BY time ASC", sensor, Date.now() - (1000 * 60 * 60 * 24),(err, rows) => {
+        res.json({message: "Loaded " + sensor + " data from last 24 hours!", data: rows})
+    })
+})
+
+app.get('/sensors', function (req, res) {
+    db.all("SELECT DISTINCT sensor FROM temps ORDER BY sensor ASC", (err, rows) => {
+        res.json({message: "Loaded sensor list!", data: rows})
     })
 })
 

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Temp Server</title>
+</head>
+<body>
+<select id="sensors">
+    <option>Choose sensor</option>
+</select>
+<canvas id="myChart" width="400" height="400"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+<script>
+
+    let sensorsRequest = new XMLHttpRequest();
+    sensorsRequest.open("GET", "/sensors");
+    sensorsRequest.send();
+    sensorsRequest.onloadend = () => {
+        let sensors = JSON.parse(sensorsRequest.responseText)['data'];
+        let options = document.getElementById('sensors');
+        for (let i in sensors) {
+            if (sensors.hasOwnProperty(i)) {
+                let option = document.createElement('option');
+                option.value = sensors[i]['sensor'];
+                option.innerText = sensors[i]['sensor'];
+                options.appendChild(option);
+            }
+        }
+    }
+
+    document.getElementById('sensors').onchange = () => {
+        let sensor = document.getElementById('sensors').value;
+
+        let req = new XMLHttpRequest();
+        req.open("GET", "/lastDay/" + sensor)
+        req.send()
+        req.onloadend = () => {
+            let rawData = JSON.parse(req.responseText)['data'];
+            let temps = []
+            let humidity = []
+            let time = []
+            for (let i in rawData) {
+                if (rawData.hasOwnProperty(i)) {
+                    temps.push(rawData[i]['temperature']);
+                    humidity.push(rawData[i]['humidity']);
+                    let date = new Date(rawData[i]['time'])
+                    time.push(date.getHours() + ":" + date.getMinutes())
+                }
+            }
+            let ctx = document.getElementById('myChart').getContext('2d');
+            let myLineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: time,
+                    datasets: [
+                        {
+                            label: "Temperature",
+                            fill: false,
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgb(255, 99, 132)',
+                            data: temps
+                        },
+                        {
+                            label: "Humidity",
+                            fill: false,
+                            borderColor: 'rgb(54, 162, 235)',
+                            backgroundColor: 'rgb(54, 162, 235)',
+                            data: humidity
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Temperature for ' + sensor
+                    }
+                }
+            });
+    }
+    }
+</script>
+</body>
+</html>
