@@ -67,4 +67,4 @@ app.get('/sensors', function (req, res) {
     })
 })
 
-app.listen(8002)
+app.listen(8002, "0.0.0.0")

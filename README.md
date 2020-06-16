@@ -1,6 +1,8 @@
 # tempLogger
 Temp Logger. Logs your Temps
 
+`docker run /path/to/existing/database.sqlite:/templogger/database.sqlite -p 8002:8002 strifel/templogger`
+
 # Insert
 POST /input/name
 {
