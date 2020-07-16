@@ -40,8 +40,8 @@ app.post('/input/:sensor', function (req, res) {
 
 app.get('/current/:sensor', function (req, res) {
     let sensor = req.params.sensor;
-    db.get("SELECT temperature, humidity, time FROM temps WHERE sensor=? ORDER BY time DESC LIMIT 1", sensor, (err, row) => {
-        res.json({message: "Loaded " + sensor + "!", temperature: row.temperature, humidity: row.humidity, lastUpdated: row.time})
+    db.get("SELECT temperature, humidity, time AS lastUpdated FROM temps WHERE sensor=? ORDER BY time DESC LIMIT 1", sensor, (err, row) => {
+        res.json({message: "Loaded " + sensor + "!", ...row})
     })
 })
 
