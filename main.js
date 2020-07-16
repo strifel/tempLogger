@@ -38,6 +38,12 @@ app.post('/input/:sensor', function (req, res) {
     })
 })
 
+app.get('/current/all', function (req, res) {
+    db.all("SELECT sensor, temperature, humidity, MAX(time) AS lastUpdated FROM temps GROUP BY sensor", (err, rows) => {
+        res.json({message: "Loaded Data of all sensors!", sensors: rows})
+    })
+})
+
 app.get('/current/:sensor', function (req, res) {
     let sensor = req.params.sensor;
     db.get("SELECT temperature, humidity, time AS lastUpdated FROM temps WHERE sensor=? ORDER BY time DESC LIMIT 1", sensor, (err, row) => {
