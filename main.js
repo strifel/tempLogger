@@ -1,7 +1,9 @@
 const express = require('express')
 const bodyParser = require('body-parser');
+const cors = require('cors')
 const sqlite3 = require('sqlite3')
 const fs = require('fs')
+
 
 let dbExists = false;
 if (fs.existsSync("database.sqlite")) dbExists = true;
@@ -24,6 +26,9 @@ if (!dbExists) {
 const app = express()
 app.use(bodyParser.json())
 app.use(express.static('web'));
+app.use(cors({
+    methods: "GET,HEAD"
+}))
 
 app.post('/input/:sensor', function (req, res) {
     if (!req.body.hasOwnProperty('token') || req.body['token'] !== token) {
